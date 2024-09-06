@@ -6,6 +6,6 @@ const connection = mysql.createPool({
     password: "8600988002",
     database: "mumbai91club",
   });
-// "start": "pm2 start src/server.js"
+// "start": "/Users/rugvedraikwar/.Trash/manage"
 
 export default connection;

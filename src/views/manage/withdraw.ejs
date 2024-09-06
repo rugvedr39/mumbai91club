@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>withdraw</title>
+  <title>Withdraw money</title>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -21,7 +21,7 @@
         <div class="container-fluid">
           <div class="row mb-2">
             <div class="col-sm-6">
-              <h1>Approve withdrawal</h1>
+              <h1>Browse withdrawals <img data-v-7b283485="" width="35px" height="35px" src="/images/withdraw.png" class="chackImg"></h1>
             </div>
           </div>
         </div>
@@ -34,7 +34,7 @@
         <!-- Default box -->
         <div class="card">
           <div class="card-header">
-            <h3 class="card-title">Withdrawal approval</h3>
+            <h3 class="card-title">withdrawals Requests</h3>
 
             <div class="card-tools">
               <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse">
@@ -51,16 +51,19 @@
                 <tr>
                   <th class="text-center">#</th>
                   <th class="text-center">Account</th>
-                  <th class="text-center">Banking</th>
-                  <th class="text-center">Account number</th>
-                  <th class="text-center">IFSC code</th>
+                  <th class="text-center">Bank</th>
+                  <th class="text-center">Account Number</th>
+                  <th class="text-center">Account Name</th>
+                  <th class="text-center">IFSC</th>
+                   <th class="text-center">UPI ID</th>
                   <th class="text-center">Amount</th>
+                  <th class="text-center">Date</th>
                   <th class="text-center">Status</th>
-                  <th class="text-center">Action</th>
+                  <th class="text-center">Accept/Reject</th>
                 </tr>
               </thead>
               <tbody>
-               
+                
               </tbody>
             </table>
           </div>
@@ -75,6 +78,34 @@
   <script src="/js/admin/admin.js"></script>
   <script src="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
   <script>
+    function formateT(params) {
+    let result = (params < 10) ? "0" + params : params;
+    return result;
+    }
+    
+    function timerJoin(params = '', addHours = 0) {
+        let date = '';
+        if (params) {
+            date = new Date(Number(params));
+        } else {
+            date = new Date();
+        }
+    
+        date.setHours(date.getHours() + addHours);
+    
+        let years = formateT(date.getFullYear());
+        let months = formateT(date.getMonth() + 1);
+        let days = formateT(date.getDate());
+    
+        let hours = date.getHours() % 12;
+        hours = hours === 0 ? 12 : hours;
+        let ampm = date.getHours() < 12 ? "AM" : "PM";
+    
+        let minutes = formateT(date.getMinutes());
+        let seconds = formateT(date.getSeconds());
+    
+        return years + '-' + months + '-' + days + ' ' + hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    }
     function show(params) {
       if (params.length == 0) {
         $('tbody').html(`
@@ -97,29 +128,38 @@
                     <b>${data.name_bank}</b>
                   </td>
                   <td style="min-width: 190px;">
-                    <b>${data.account}</b>
+                    <b>${data.stk}</b>
+                  </td>
+                  <td style="min-width: 190px;">
+                    <b>${data.name_user}</b>
                   </td>
                   <td style="min-width: 190px;">
                     <b>${data.ifsc}</b>
                   </td>
+                  <td style="min-width: 190px;">
+                    <b>${data.sdt}</b>
+                  </td>
                   <td>
-                    <b>${formatMoney(data.money)}</b>
+                    <b>${data.money}</b>
+                  </td>
+                  <td style="min-width: 190px;">
+                    <b>${timerJoin(data.time)}</b>
                   </td>
                   <td class="project-state">
                     <span class="badge badge-warning">Waiting...</span>
                   </td>
                   <td class="project-actions text-center" style="min-width: 160px;">
-                    <!-- confirm -->
-                    <a class="btn btn-success btn-sm confirm-btn" href="" data="${data.id}"><i class="fa fa-check"></i></a>
+                    <!-- xác nhận -->
+                    <a class="btn btn-success btn-sm confirm-btn" href="" data="${data.id}"><i class="fa fa-check-circle"></i></a>
                     <!-- ? -->
                     <!-- <a class="btn btn-info btn-sm" href="#"><i class="fas fa-pencil-alt"></i></a> -->
-                    <!-- Delete -->
-                    <a class="btn btn-danger btn-sm delete-btn" href="#" data="${data.id}"><i class="fas fa-trash"></i></a >
+                    <!-- Xóa -->
+                    <a class="btn btn-danger btn-sm delete-btn" href="#" data="${data.id}"><i class="fas fa-times-circle"></i></a>
                   </td>
                 </tr>`;
               })
           $('tbody').html(html);
-          $('.btn-success').click(function (e) {
+          $('.btn-success').click(function (e) { 
             e.preventDefault();
             let id = $(this).attr('data');
             $.ajax({
@@ -133,7 +173,7 @@
               success: function (response) {
                 Swal.fire(
                   'Good job!',
-                  'You clicked the button!',
+                  'Withdrawal Accepted Successfully!',
                   'success'
                 )
                 setTimeout(() => {
@@ -142,7 +182,7 @@
               }
             });
           });
-          $('.btn-danger').click(function (e) {
+          $('.btn-danger').click(function (e) { 
             e.preventDefault();
             let id = $(this).attr('data');
             $.ajax({
@@ -155,29 +195,29 @@
               dataType: "json",
               success: function (response) {
                 setTimeout(() => {
-                   location.reload();
-                 }, 100);
-                 Swal.fire(
-                   'Good job!',
-                   'You clicked the button!',
-                   'success'
-                 )
-               }
-             });
-           });
-     }
-     $.ajax({
-       type: "POST",
-       url: "/api/webapi/admin/recharge",
-       data: {
+                  location.reload();
+                }, 100);
+                Swal.fire(
+                  'Good job!',
+                  'Withdrawal Rejected Successfully!',
+                  'success'
+                )
+              }
+            });
+          });
+    }
+    $.ajax({
+      type: "POST",
+      url: "/api/webapi/admin/recharge",
+      data: {
         
-       },
-       dataType: "json",
-       success: function (response) {
-         show(response.datas3)
-       }
-     });
-   </script>
+      },
+      dataType: "json",
+      success: function (response) {
+        show(response.datas3)
+      }
+    });
+  </script>
 </body>
 
 </html>

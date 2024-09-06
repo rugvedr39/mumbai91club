@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Khởi tạo giftcode</title>
+    <title>Create giftcode</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="/plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -62,6 +62,10 @@
                                         <label for="money">Giftcode</label>
                                         <input type="text" oninput="value=value.replace(/\D/g,'')" class="form-control" id="money" placeholder="Enter the amount">
                                     </div>
+                                    <div class="form-group money">
+                                        <label for="user">Users</label>
+                                        <input type="number"  class="form-control" id="user" placeholder="Enter the no of user">
+                                    </div>
                                     <div class="form-group result" style="display: none;">
                                         <input type="text" class="form-control" id="money_result" placeholder="Link">
                                         <div class="input-group-text copy_link">
@@ -69,7 +73,7 @@
                                         </div>
                                     </div>
     
-                                    <button type="submit" class="btn btn-primary" id="submit" style="width: 100%;margin-top: 26px;">Submit</button>
+                                    <button type="submit" class="btn btn-danger" id="submit" style="width: 100%;margin-top: 26px;">Create</button>
                                 </div>
                             </div>
                         </div>
@@ -99,8 +103,10 @@
                                         <th class="text-center">ID</th>
                                         <th class="text-center">Creator</th>
                                         <th class="text-center">Gift code Amount</th>
+                                        <th class="text-center">Users</th>
                                         <th class="text-center">Already Used</th>
                                         <th class="text-center">Time</th>
+                                        
                                     </tr>
                                 </thead>
                                 <tbody id="list-details-news">
@@ -119,34 +125,39 @@
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 
     <script>
-        function formateT(params) {
-            let result = (params < 10) ? "0" + params : params;
-            return result;
-        }
-
-        function timerJoin(params = '') {
-            let date = '';
-            if (params) {
+    function formateT(params) {
+    let result = (params < 10) ? "0" + params : params;
+    return result;
+    }
+    
+    function timerJoin(params = '', addHours = 0) {
+        let date = '';
+        if (params) {
             date = new Date(Number(params));
-            } else {
-            date = Date.now();
-            date = new Date(Number(date));
-            }
-            let years = formateT(date.getFullYear());
-            let months = formateT(date.getMonth() + 1);
-            let days = formateT(date.getDate());
-            let weeks = formateT(date.getDay());
-        
-            let hours = formateT(date.getHours());
-            let minutes = formateT(date.getMinutes());
-            let seconds = formateT(date.getSeconds());
-            return years + '/' + months + '/' + days + ' - ' + hours + ':' + minutes + ':' + seconds;
+        } else {
+            date = new Date();
         }
+    
+        date.setHours(date.getHours() + addHours);
+    
+        let years = formateT(date.getFullYear());
+        let months = formateT(date.getMonth() + 1);
+        let days = formateT(date.getDate());
+    
+        let hours = date.getHours() % 12;
+        hours = hours === 0 ? 12 : hours;
+        let ampm = date.getHours() < 12 ? "AM" : "PM";
+    
+        let minutes = formateT(date.getMinutes());
+        let seconds = formateT(date.getSeconds());
+    
+        return years + '-' + months + '-' + days + ' ' + hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+    }
         const RenderMemberNews = (datas) => {
             if (datas.length == 0) {
                 $('#list-details-news').html(`
                     <tr class="text-center">
-                    <td colspan="7">没有数据...</td>
+                    <td colspan="7">No More Data...</td>
                     </tr>
                 `);
                 return;
@@ -158,9 +169,11 @@
                 <tr class="text-center" style="">
                     <td>${data.id_redenvelope}</td>
                     <td style="color: #3498db;font-weight: 600;min-width: 210px">${data.phone}</td>
-                    <td><b style="color: #e74c3c">${formatMoney(data.money)}</b></td>
+                    <td><b style="color: #e74c3c">${(data.money)}</b></td>
+                    <td style="min-width: 110px;"><b>${data.used}</b></td>
                     <td class="project-state"><span class="badge badge-${(data.status == 1 ? 'success' : 'warning')}">${(data.status == 1 ? 'success' : 'not used yet')}</span></td>
                     <td style="min-width: 110px;"><b>${timerJoin(data.time)}</b></td>
+                    
                 </tr>
                 `;
                 $("#list-details-news").html(html);
@@ -189,12 +202,14 @@
         $('#submit').click(function (e) { 
             e.preventDefault();
             let money = $('#money').val().trim();
+            let numberOfUsers = $('#user').val();
             if (money) {
                 $.ajax({
                     type: "POST",
                     url: "/admin/manager/createBonus",
                     data: {
                         money: money,
+                        numberOfUsers: numberOfUsers,
                     },
                     dataType: "json",
                     success: function (response) {
@@ -205,7 +220,7 @@
                     }
                 });
             } else {
-                alert("Vui lòng nhập đầy đủ thông tin");
+                alert("Please Enter The Amount");
             }
         });
         $('select').change(function() {
